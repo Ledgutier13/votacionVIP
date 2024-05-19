@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votación Interactiva</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <!-- Página de Inicio -->
+    <div id="inicio" class="pagina">
+        <h1 id="titulo">Tema de la Votación</h1>
+        <p id="descripcion">Una breve descripción del tema de la votación y su importancia.</p>
+        <button onclick="mostrarPagina('loginVotar')">Comenzar Votación</button>
+        <button onclick="mostrarPagina('loginEditar')">Editar Texto</button>
+        <p id="verResultadosInicio" style="display:none;">
+            Para ver los resultados <a href="#" onclick="mostrarPagina('login')">presiona aquí</a>.
+        </p>
+    </div>
+
+    <!-- Página de Login para Votación -->
+    <div id="loginVotar" class="pagina" style="display:none;">
+        <h2>Acceso para Votar</h2>
+        <label for="usuarioVotar">Usuario:</label>
+        <input type="text" id="usuarioVotar"><br>
+        <label for="contrasenaVotar">Contraseña:</label>
+        <input type="password" id="contrasenaVotar"><br>
+        <button onclick="verificarCredencialesVotar()">Acceder</button>
+        <p id="mensajeErrorVotar" style="color:red; display:none;">Usuario o contraseña incorrectos.</p>
+        <button onclick="mostrarPagina('inicio')">← Volver</button>
+        <p>¿Olvidaste tu contraseña? <a href="#" onclick="mostrarPagina('cambiarContrasena')">Cambia tu contraseña aquí</a>.</p>
+    </div>
+
+    <!-- Página de Login para Edición -->
+    <div id="loginEditar" class="pagina" style="display:none;">
+        <h2>Acceso para Editar Texto</h2>
+        <label for="usuarioEditar">Usuario:</label>
+        <input type="text" id="usuarioEditar"><br>
+        <label for="contrasenaEditar">Contraseña:</label>
+        <input type="password" id="contrasenaEditar"><br>
+        <button onclick="verificarCredencialesEditar()">Acceder</button>
+        <p id="mensajeErrorEditar" style="color:red; display:none;">Usuario o contraseña incorrectos.</p>
+        <button onclick="mostrarPagina('inicio')">← Volver</button>
+    </div>
+
+    <!-- Página de Edición -->
+    <div id="editar" class="pagina" style="display:none;">
+        <h2>Editar Texto</h2>
+        <label for="nuevoTitulo">Título:</label>
+        <input type="text" id="nuevoTitulo" value="Tema de la Votación"><br>
+        <label for="nuevaDescripcion">Descripción:</label>
+        <textarea id="nuevaDescripcion">Una breve descripción del tema de la votación y su importancia.</textarea><br>
+        <button onclick="guardarTexto()">Guardar</button>
+        <button onclick="borrarVotacion()">Borrar Votación</button>
+        <button onclick="mostrarPagina('inicio')">← Volver</button>
+    </div>
+
+    <!-- Página de Votación -->
+    <div id="votacion" class="pagina" style="display:none;">
+        <h2>¿Está de acuerdo con la propuesta?</h2>
+        <button id="btn-si" onclick="seleccionarOpcion('si')">Sí</button>
+        <button id="btn-no" onclick="seleccionarOpcion('no')">No</button>
+        <button id="btn-abstenerse" onclick="seleccionarOpcion('abstenerse')">Abstenerse</button>
+        <button onclick="enviarVoto()">Enviar Voto</button>
+        <p id="confirmacion" style="display:none;">¡Gracias por tu voto!</p>
+        <button onclick="mostrarPagina('inicio')">← Volver</button>
+    </div>
+
+    <!-- Página de Login para Resultados -->
+    <div id="login" class="pagina" style="display:none;">
+        <h2>Acceso a Resultados</h2>
+        <label for="usuario">Usuario:</label>
+        <input type="text" id="usuario"><br>
+        <label for="contrasena">Contraseña:</label>
+        <input type="password" id="contrasena"><br>
+        <button onclick="verificarCredenciales()">Ver Resultados</button>
+        <p id="mensajeError" style="color:red; display:none;">Usuario o contraseña incorrectos.</p>
+        <button onclick="mostrarPagina('inicio')">← Volver</button>
+    </div>
+
+    <!-- Página para Cambiar Contraseña -->
+    <div id="cambiarContrasena" class="pagina" style="display:none;">
+        <h2>Cambiar Contraseña</h2>
+        <label for="usuarioCambiar">Usuario:</label>
+        <input type="text" id="usuarioCambiar"><br>
+        <label for="contrasenaActual">Contraseña Actual:</label>
+        <input type="password" id="contrasenaActual"><br>
+        <label for="nuevaContrasena">Nueva Contraseña:</label>
+        <input type="password" id="nuevaContrasena"><br>
+        <button onclick="cambiarContrasena()">Cambiar Contraseña</button>
+        <p id="mensajeErrorCambiar" style="color:red; display:none;">Usuario o contraseña incorrectos.</p>
+        <button onclick="mostrarPagina('loginVotar')">← Volver</button>
+    </div>
+
+    <!-- Página de Resultados -->
+    <div id="resultados" class="pagina" style="display:none;">
+        <h2>Resultados de la Votación</h2>
+        <div class="grafica-container">
+            <canvas id="grafica"></canvas>
+        </div>
+        <p id="porcentajes"></p>
+        <p id="totalVotos"></p>
+        <button onclick="mostrarPagina('inicio')">← Volver</button>
+    </div>
+
+    <!-- Cuadro de diálogo para "Usted ya votó" -->
+    <div id="yaVotoDialog" class="dialogo" style="display:none;">
+        <div class="dialogo-contenido">
+            <span class="cerrar" onclick="cerrarDialogo('yaVotoDialog')">&times;</span>
+            <p>Usted ya votó.</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,17 +1,4 @@
-// Configuración de Firebase
-const firebaseConfig = {
-    apiKey: "AlzaSyB1qWP8M3jEaux1JqzCOz-zb-ki9MumwyY",
-    authDomain: "votaciononline-502dd.firebaseapp.com",
-    databaseURL: "https://votaciononline-502dd-default-rtdb.firebaseio.com",
-    projectId: "votaciononline-502dd",
-    storageBucket: "votaciononline-502dd.appspot.com",
-    messagingSenderId: "2239640995350",
-    appId: "1:2239640995350:web:xxxxxxxxxxxxxxxx"
-};
-
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+import { db, ref, get, set, update } from './index.html';
 
 // Variables globales
 let votos = { si: 0, no: 0, abstenerse: 0 };
@@ -28,9 +15,9 @@ let usuarioActual = null;
 
 // Funciones para interactuar con Firebase Realtime Database
 async function cargarDatos() {
-    const snapshot = await db.ref('votacion').once('value');
-    const data = snapshot.val();
-    if (data) {
+    const snapshot = await get(ref(db, 'votacion'));
+    if (snapshot.exists()) {
+        const data = snapshot.val();
         votos = data.votos;
         Object.assign(usuarios, data.usuarios);
         document.getElementById('titulo').innerText = data.titulo;
@@ -39,7 +26,7 @@ async function cargarDatos() {
 }
 
 async function guardarDatos() {
-    await db.ref('votacion').set({
+    await set(ref(db, 'votacion'), {
         votos: votos,
         usuarios: usuarios,
         titulo: document.getElementById('titulo').innerText,
